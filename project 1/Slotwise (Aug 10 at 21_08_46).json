@@ -1,0 +1,290 @@
+{
+  "name": "Slotwise (Aug 10 at 21:08:46)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        208,
+        0
+      ],
+      "id": "9ae1e55b-8496-4873-bf4e-e2f93567e4a7",
+      "name": "Telegram Trigger",
+      "webhookId": "c9dd6037-16b7-4e5c-9fc9-b6eaa094b3a2",
+      "credentials": {
+        "telegramApi": {
+          "id": "6MUKmTMbxBrvfNil",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1104,
+        0
+      ],
+      "id": "fa45bf74-a07d-4df5-b2e5-c57831316584",
+      "name": "Send a text message",
+      "webhookId": "85d88fd8-ce0a-411b-adf3-fb0844c6d7f7",
+      "credentials": {
+        "telegramApi": {
+          "id": "6MUKmTMbxBrvfNil",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "You are SlotWise, an AI restaurant booking concierge.\n\nYour job is ONLY to help users book a restaurant table.\n\nCollect these details:\n1. Number of guests\n2. Occasion, if any\n3. Preferred date\n4. Preferred time\n\nBooking flow:\n- Greet the user and ask if they want to book a table or ask a question.\n- Ask for the number of guests.\n- Ask about the occasion.\n- Ask for the preferred date.\n- Ask for the preferred time.\n- Once you know the date and approximate time, offer exactly these 3 mock available slots:\n7:00 PM, 7:30 PM, 8:00 PM.\n- Ask the user to choose one.\n- After they choose, summarize the booking and ask for confirmation.\n- Only confirm the booking after the user explicitly confirms.\n- Keep responses short and friendly.\n\nIf the user asks about pricing negotiation, complaints, or anything outside restaurant booking, reply:\n\"Let me connect you with our team.\"\n\nNever claim that the mock slots are real availability.\n\n- Once the user explicitly confirms the booking, you MUST immediately call the 'Append row in sheet' tool to save the booking details (User ID, Name, Date, Time, and Guests) to the spreadsheet.\n- Do not finish the conversation without calling this tool after confirmation.\nBOOKING SAVE RULE:\n\nOnly call the Google Sheets tool after the user explicitly confirms the final booking.\n\nWhen the user confirms:\n- Call the Google Sheets tool.\n- Pass the confirmed date.\n- Pass the confirmed time.\n- Pass the confirmed number of guests.\n- Save the booking with status Confirmed.\n- Only tell the user the booking is confirmed after the Google Sheets tool succeeds."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "703be0f5-52cf-4098-9f57-71f076768d1c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "google/gemma-4-26b-a4b-it:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        288,
+        208
+      ],
+      "id": "af1a9586-1810-4dff-a7e7-b43bb0a90cb3",
+      "name": "OpenRouter Chat Model",
+      "notesInFlow": false,
+      "credentials": {
+        "openRouterApi": {
+          "id": "ldmB2VodOaj8HHDd",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        432,
+        208
+      ],
+      "id": "035f4184-1775-4394-ba24-d96c483a692a",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool when the user wants to book a table, make a reservation, or specifies the number of guests, date, and time.",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1UlLXhNrqla3DbukhdAfiV_dgLqjq94UsPUH7tRiGpMA",
+          "mode": "list",
+          "cachedResultName": "Slotwise Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UlLXhNrqla3DbukhdAfiV_dgLqjq94UsPUH7tRiGpMA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UlLXhNrqla3DbukhdAfiV_dgLqjq94UsPUH7tRiGpMA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "User ID": "={{ $json.message.from.id }}",
+            "Name": "={{ $json.message.from.first_name }}",
+            "Date": "={{ $fromAI(\"booking_date\", \"The confirmed restaurant booking date\", \"string\") }}",
+            "Time": "={{ $fromAI(\"booking_time\", \"The confirmed restaurant booking time\", \"string\") }}",
+            "Guest": "{{ $fromAI(\"guests\", \"The confirmed number of guests\", \"number\") }}",
+            "Status": "Confirmed"
+          },
+          "matchingColumns": [
+            "User ID"
+          ],
+          "schema": [
+            {
+              "id": "User ID",
+              "displayName": "User ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Guest",
+              "displayName": "Guest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        208
+      ],
+      "id": "b033c177-c540-4865-a26e-a669aa484882",
+      "name": "Append row in sheet in Google Sheets",
+      "notesInFlow": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "slY6i9UCPwqDqFtP",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "5eb20cdb-b8eb-46f7-9636-39191e8e5f49",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4030ddc379d92aaff8e3652050726295dd06544c05e7189debfa0bdb1c094bd0"
+  },
+  "nodeGroups": [],
+  "id": "Jk4TPkd4NcrL1NdP",
+  "tags": []
+}
