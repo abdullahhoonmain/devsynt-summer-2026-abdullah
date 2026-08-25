@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LangChain & LangGraph Fundamentals</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="hero">
+        <nav class="nav container">
+            <div class="logo">AI Learning Notes</div>
+            <span class="week">Project 2 · Phase 1</span>
+        </nav>
+
+        <div class="hero-content container">
+            <p class="eyebrow">DevSynt AI Automation Internship</p>
+            <h1>LangChain &amp; LangGraph<br><span>Fundamentals</span></h1>
+            <p class="intro">
+                A simple summary of what I learned about chains, prompts, memory,
+                tools, graphs, and orchestrator agents.
+            </p>
+            <div class="tags">
+                <span>LangChain</span>
+                <span>LangGraph</span>
+                <span>Agents</span>
+                <span>Tool Calling</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="section container">
+            <div class="section-heading">
+                <span class="number">01</span>
+                <div>
+                    <h2>What is LangChain?</h2>
+                    <p>Building blocks for LLM applications.</p>
+                </div>
+            </div>
+
+            <div class="two-column">
+                <div class="card">
+                    <p>
+                        When we call an LLM API directly, we usually send a prompt
+                        and receive a text response. LangChain adds reusable
+                        building blocks around the model so we can create more
+                        organized and repeatable LLM workflows.
+                    </p>
+                    <p>
+                        Some useful building blocks are prompt templates, LLM
+                        wrappers, chains, and output parsers. LangChain also makes
+                        it easier to work with different LLM providers without
+                        rewriting the whole application.
+                    </p>
+                </div>
+
+                <div class="flow-card">
+                    <div class="flow-label">A simple LangChain chain</div>
+                    <div class="flow">
+                        <div>Prompt<br>Template</div>
+                        <b>→</b>
+                        <div>LLM</div>
+                        <b>→</b>
+                        <div>Output</div>
+                    </div>
+                    <code>prompt | llm | parser</code>
+                    <p class="small">
+                        The <strong>|</strong> operator is part of LCEL
+                        (LangChain Expression Language).
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-alt">
+            <div class="container">
+                <div class="section-heading">
+                    <span class="number">02</span>
+                    <div>
+                        <h2>Prompt Templates &amp; Output Parsers</h2>
+                        <p>Make prompts reusable and responses easier to use in code.</p>
+                    </div>
+                </div>
+
+                <div class="cards">
+                    <article class="card">
+                        <h3>Prompt Template</h3>
+                        <p>
+                            A prompt template is a prompt with placeholders.
+                            Instead of writing the same prompt again, we can
+                            provide a different value for the variable.
+                        </p>
+                        <pre><code>prompt = PromptTemplate.from_template(
+    "Explain {topic} in simple English."
+)
+
+prompt.invoke({"topic": "LangChain"})</code></pre>
+                    </article>
+
+                    <article class="card">
+                        <h3>Output Parser</h3>
+                        <p>
+                            LLMs normally return free-form text. An output parser
+                            helps turn that response into a form our program can
+                            work with more reliably.
+                        </p>
+                        <pre><code>{
+  "topic": "LangChain",
+  "summary": "A framework for LLM apps"
+}</code></pre>
+                        <p class="small">
+                            Common concepts include <strong>StrOutputParser</strong>,
+                            <strong>JsonOutputParser</strong>, structured output,
+                            and Pydantic models.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section container">
+            <div class="section-heading">
+                <span class="number">03</span>
+                <div>
+                    <h2>Memory &amp; Tool Calling</h2>
+                    <p>Give an LLM useful context and access to external actions.</p>
+                </div>
+            </div>
+
+            <div class="cards">
+                <article class="card">
+                    <h3>Memory</h3>
+                    <p>
+                        An LLM call is normally independent. If an application
+                        needs the bot to refer to earlier messages, it must keep
+                        the conversation history and provide the relevant history
+                        to later calls.
+                    </p>
+                    <div class="mini-flow">
+                        <span>User message</span>
+                        <span>→</span>
+                        <span>Chat history</span>
+                        <span>→</span>
+                        <span>LLM</span>
+                    </div>
+                </article>
+
+                <article class="card">
+                    <h3>Tool Calling</h3>
+                    <p>
+                        Tool calling lets an LLM use functions instead of trying
+                        to answer everything from its own knowledge. A tool could
+                        be a calculator, search function, or database lookup.
+                    </p>
+                    <div class="tool-flow">
+                        <span>Question</span>
+                        <b>→</b>
+                        <span>LLM</span>
+                        <b>→</b>
+                        <span>Tool</span>
+                        <b>→</b>
+                        <span>Result</span>
+                    </div>
+                    <p class="small">
+                        The model can decide when a tool is needed and what
+                        information should be passed to it.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section section-alt">
+            <div class="container">
+                <div class="section-heading">
+                    <span class="number">04</span>
+                    <div>
+                        <h2>What is LangGraph?</h2>
+                        <p>Useful when an application needs decisions and changing paths.</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="card">
+                        <h3>Chain vs Agent</h3>
+                        <p>
+                            A chain follows a fixed sequence. The same steps happen
+                            in the same order.
+                        </p>
+                        <div class="diagram simple">
+                            <span>A</span><b>→</b><span>B</span><b>→</b><span>C</span>
+                        </div>
+
+                        <p>
+                            An agent can look at the situation and decide what to
+                            do next. It may choose between paths, repeat a step,
+                            or skip a step.
+                        </p>
+                        <div class="diagram">
+                            <span>A</span><b>→</b><span class="decision">Decision</span>
+                            <b>→</b>
+                            <div class="branches">
+                                <span>B</span>
+                                <span>C</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Why LangGraph?</h3>
+                        <p>
+                            LangGraph represents these decision-making workflows
+                            as a graph. It gives us a way to define steps, connect
+                            them, make decisions, and carry shared data through
+                            the workflow.
+                        </p>
+                        <div class="concept-list">
+                            <div><strong>Node</strong><span>A step in the graph.</span></div>
+                            <div><strong>Edge</strong><span>A connection between steps.</span></div>
+                            <div><strong>Conditional edge</strong><span>A route chosen from a result or condition.</span></div>
+                            <div><strong>State</strong><span>Data that moves through and is updated by the graph.</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section container">
+            <div class="section-heading">
+                <span class="number">05</span>
+                <div>
+                    <h2>Orchestrator Agents</h2>
+                    <p>A manager that decides which specialized agent should handle the work.</p>
+                </div>
+            </div>
+
+            <div class="card orchestrator">
+                <p>
+                    An orchestrator receives a task, decides what needs to happen,
+                    and routes the task to the right specialized agent. The
+                    orchestrator usually does not perform all the work itself.
+                </p>
+
+                <div class="orchestration-diagram">
+                    <div class="node main-node">Orchestrator</div>
+                    <div class="line"></div>
+                    <div class="agent-row">
+                        <div class="node">Research Agent</div>
+                        <div class="node">Coding Agent</div>
+                        <div class="node">Analysis Agent</div>
+                    </div>
+                    <div class="down-line"></div>
+                    <div class="node result-node">Final Result</div>
+                </div>
+
+                <div class="note">
+                    <strong>Why it matters for the next project:</strong>
+                    the upcoming mini-project uses an orchestrator pattern.
+                    The orchestrator will receive raw data and decide which
+                    specialized agent should handle it next.
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-alt">
+            <div class="container">
+                <div class="section-heading">
+                    <span class="number">06</span>
+                    <div>
+                        <h2>What I Learned</h2>
+                        <p>My main takeaways from this learning week.</p>
+                    </div>
+                </div>
+
+                <div class="learning-grid">
+                    <div class="learning-item">
+                        <span>01</span>
+                        <p>LangChain helps organize common parts of an LLM application into reusable components.</p>
+                    </div>
+                    <div class="learning-item">
+                        <span>02</span>
+                        <p>Prompt templates make prompts reusable, while structured output makes responses easier for code to handle.</p>
+                    </div>
+                    <div class="learning-item">
+                        <span>03</span>
+                        <p>Memory gives an application access to conversation history, and tool calling lets an LLM use external functions.</p>
+                    </div>
+                    <div class="learning-item">
+                        <span>04</span>
+                        <p>LangGraph is useful when an application needs state, decisions, and different paths instead of one fixed chain.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <span>Project 2 — Phase 1</span>
+            <span>LangChain + LangGraph Fundamentals</span>
+        </div>
+    </footer>
+</body>
+</html>
